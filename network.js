@@ -3,9 +3,9 @@ const DataParser = require('./data-parser.js');
 const parser = new DataParser('./iris.json');
 
 /*
-  For this project, I will be using functional programming because this
-  is largely mathematical. We don't need to store states, so there isn't
-  really a need for creating an object/class.
+For this project, I will be using functional programming because this
+is largely mathematical. We don't need to store states, so there isn't
+really a need for creating an object/class.
 */
 
 function matMultiply(mat, vec) {
@@ -95,9 +95,9 @@ function printMat(mat) {
     let string = "";
     for (let j = 0; j < mat[i].length; j++) {
       if (mat[i][j] >= 0) {
-        string += " " + mat[i][j].toFixed(3) + " ";
+        string += " " + mat[i][j].toFixed(6) + " ";
       } else {
-        string += mat[i][j].toFixed(3) + " ";
+        string += mat[i][j].toFixed(6) + " ";
       }
     }
     console.log(string);
@@ -114,6 +114,16 @@ function dupWeight(weights) {
     copy.push(mat);
   }
   return copy;
+}
+
+function matrixNorm(mat) {
+  let sum = 0;
+  for (let i = 0; i < mat.length; i++) {
+    for (let j = 0; j < mat[i].length; j++) {
+      sum += mat[i][j]*mat[i][j];
+    }
+  }
+  return sum;
 }
 
 function sigmoid(zVector) {
@@ -152,8 +162,8 @@ function backProp(aVecs, yVec, weights) {
 }
 
 function accumDelta(bigDeltas, deltas, aVecs) {
-// Iterate through layers, denote l as layer.
-// Work on mapping from output layer to last hidden layer first.
+  // Iterate through layers, denote l as layer.
+  // Work on mapping from output layer to last hidden layer first.
   let L = bigDeltas.length - 1;
 
   for (let i = 0; i < deltas[L + 1].length; i++) {
@@ -225,7 +235,7 @@ function costFunction(xVec, yVec, weights, lambda) {
   for (let i = 0; i < m; i++) {
     let aVecs = forwardProp(xVec[i], weights);
     let y = yVec[i], h = aVecs[aVecs.length - 1];
-    for (let k = 0; k < yVec[i].length; k++) {
+    for (let k = 0; k < y.length; k++) {
       costSum += y[k]*Math.log(h[k]) + ((1 - y[k])*Math.log(1 - h[k]));
     }
   }
@@ -247,7 +257,7 @@ function approxGradient(xVec, yVec, weights, lambda, e) {
         let weightsDup2 = dupWeight(weights);
         weightsDup2[l][i][j] -= e;
         let approxPartial = (costFunction(xVec, yVec, weightsDup1, lambda) -
-          costFunction(xVec, yVec, weightsDup2, lambda))/(2*e);
+        costFunction(xVec, yVec, weightsDup2, lambda))/(2*e);
         row.push(approxPartial);
       }
       partialMat.push(row);
@@ -257,34 +267,61 @@ function approxGradient(xVec, yVec, weights, lambda, e) {
   return approxGrad;
 }
 
+function gradientDescent(xVectors, yVectors) {
+  let weights = [randomInit(4, 5, 1), randomInit(3, 5, 1)];
+  let m = xVectors.length;
+  let lambda = 0.01, alpha = 0.01;
+  let bigDeltas, parDerivatives;
+  do {
+    bigDeltas = computeBigDelta(weights, xVectors, yVectors);
+    parDerivatives = computePartial(weights, bigDeltas, m, lambda);
+    for (let l = 0; l < weights.length; l++) {
+      for (let i = 0; i < weights[l].length; i++) {
+        for (let j = 0; j < weights[l][i].length; j++) {
+          weights[l][i][j] = weights[l][i][j] - alpha*parDerivatives[l][i][j];
+        }
+      }
+    }
+    //console.log(matrixNorm(parDerivatives[0]) + matrixNorm(parDerivatives[1]));
+  } while (matrixNorm(parDerivatives[0]) + matrixNorm(parDerivatives[1]) > 0.003);
+  return weights;
+}
+
 
 /*
-  For this iris classification problem, I will use 3 layers of neural network
-  for simplicity.
-  Layer 1 is the input layer, with 4 units + 1 bias.
-  Layer 2 is the hidden layer, once again, 4 units  + 1 bias.
-  Layer 3 is the output layer, with 3 units, no bias
+For this iris classification problem, I will use 3 layers of neural network
+for simplicity.
+Layer 1 is the input layer, with 4 units + 1 bias.
+Layer 2 is the hidden layer, once again, 4 units  + 1 bias.
+Layer 3 is the output layer, with 3 units, no bias
 */
 
 // These are the weights for layer 1 and layer 2. Layer 3 does not have weights.
-const weights = [randomInit(4, 5, 0.1), randomInit(3, 5, 0.1)];
-const xVec = parser.xVector;
-const yVec = parser.yVector;
-let m = xVec.length;
-let bigDeltas = computeBigDelta(weights, xVec, yVec);
-let partial = computePartial(weights, bigDeltas, m, 0.01);
-console.log("Layer 1 - big Delta");
-printMat(bigDeltas[0]);
-console.log("Layer 2 - big Delta");
-printMat(bigDeltas[1]);
+// const weights = [randomInit(4, 5, 0.1), randomInit(3, 5, 0.1)];
+const xVecs = parser.xVector;
+const yVecs = parser.yVector;
+let params = gradientDescent(xVecs, yVecs);
+console.log(forwardProp([5.1,3.5,1.4,0.2], params));
+console.log(forwardProp([6.8,2.8,4.8,1.4], params));
+console.log(forwardProp([6.3,3.3,6.0,2.5], params));
 
-console.log("Layer 1 - Partial");
-printMat(partial[0]);
-console.log("Layer 2 - Partial");
-printMat(partial[1]);
 
-let approx = approxGradient(xVec, yVec, weights, 0.01, 0.0001);
-console.log("Layer 1 - Approx Partial");
-printMat(approx[0]);
-console.log("Layer 2 - Approx Partial");
-printMat(approx[1]);
+// let m = xVecs.length;
+// let bigDeltas = computeBigDelta(weights, xVecs, yVecs);
+// let partial = computePartial(weights, bigDeltas, m, 0.01);
+
+// console.log("Layer 1 - big Delta");
+// printMat(bigDeltas[0]);
+// console.log("Layer 2 - big Delta");
+// printMat(bigDeltas[1]);
+//
+// console.log("Layer 1 - Partial");
+// printMat(partial[0]);
+// console.log("Layer 2 - Partial");
+// printMat(partial[1]);
+
+// let approx = approxGradient(xVecs, yVecs, weights, 0.01, 0.01);
+// console.log("Layer 1 - Approx Partial");
+// printMat(approx[0]);
+// console.log("Layer 2 - Approx Partial");
+// printMat(approx[1]);
