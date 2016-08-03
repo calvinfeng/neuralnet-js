@@ -9,6 +9,35 @@ const speciesMap = {
 const jsonData = require('./iris.json');
 const IrisData = {
 
+  getInputVectors: function() {
+    //Take out 5 Iris-setosa, 5 Iris-versicolor, 5 Iris-virginica
+    let trainingSet = [], testSet = [], data = jsonData;
+    for (let i = 0; i < data.length; i++) {
+      let keys = Object.keys(data[i]), x = [];
+      for (let j = 1; j < keys.length - 1; j++) {
+        x.push(data[i][keys[j]]);
+      }
+      if ( (145 <= i && i < data.length) || (95 <= i && i < 100) || (45 <= i && i < 50) ) {
+        testSet.push(x);
+      } else {
+        trainingSet.push(x);
+      }
+    }
+    return [trainingSet, testSet];
+  },
+
+  getOutputVectors: function() {
+    let trainingSet = [], testSet = [], data = jsonData;
+    for (let i = 0; i < data.length; i++) {
+      if ( (145 <= i && i < data.length) || (95 <= i && i < 100) || (45 <= i && i < 50) ) {
+        testSet.push(speciesMap[data[i].Species]);
+      } else {
+        trainingSet.push(speciesMap[data[i].Species]);
+      }
+    }
+    return [trainingSet, testSet];
+  },
+
   getXVectors: function() {
     let xVectors = [], data = jsonData;
     for (let i = 0; i < data.length; i++) {

@@ -173,20 +173,32 @@ function gradientDescent(trainingSetX, trainingSetY) {
   return weights;
 }
 
-const weights = [Matrix.random(4, 5, 0.1), Matrix.random(3, 5, 0.1)];
-const xVecs = IrisData.getXVectors();
-const yVecs = IrisData.getYVectors();
-const params = gradientDescent(xVecs, yVecs);
-console.log(forwardProp([5.1,3.5,1.4,0.2], params)[2]);
-console.log(forwardProp([6.8,2.8,4.8,1.4], params)[2]);
-console.log(forwardProp([6.3,3.3,6.0,2.5], params)[2]);
+let inputs = IrisData.getInputVectors();
+let xTraining = inputs[0], xTest = inputs[1];
+let outputs = IrisData.getOutputVectors();
+let yTraining = outputs[0], yTest = outputs[1];
+const params = gradientDescent(xTraining, yTraining);
+for (let l = 0; l < params.length; l++) {
+  console.log(`Layer ${l + 1}`);
+  Matrix.print(params[l]);
+}
+
+for (let i = 0; i < yTest.length; i++) {
+  let activations = forwardProp(xTest[i], params);
+  let predictions = Vector.classify(activations[activations.length - 1]);
+  if (Vector.isEqual(predictions, yTest[i])) {
+    console.log(`Test ${i + 1}: Passed`);
+  } else {
+    console.log(`Test ${i + 2}: Failed`);
+  }
+  console.log(predictions);
+  console.log(yTest[i]);
+}
+
+/*
+  This is gradient checking, to make sure backpropagation is working as intended
+*/
+// const weights = [Matrix.random(4, 5, 0.1), Matrix.random(3, 5, 0.1)];
 // let bigDeltas = deltaMatrices(weights, xVecs, yVecs);
 // let partial = computePartial(weights, bigDeltas, xVecs.length, 0.005);
 // let approxPartial = approxGradient(xVecs, yVecs,weights, 0.005, 0.001);
-//
-// console.log("Partial");
-// Matrix.print(partial[0]);
-// Matrix.print(partial[1]);
-// console.log("Approx Partial");
-// Matrix.print(approxPartial[0]);
-// Matrix.print(approxPartial[1]);
