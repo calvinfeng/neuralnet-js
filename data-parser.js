@@ -6,15 +6,11 @@ const speciesMap = {
   'Iris-virginica': [0, 0, 1]
 };
 
-class DataParser {
-  constructor(fileName) {
-    this.dataFile = require(fileName);
-    this.xVector = this.getXVector();
-    this.yVector = this.getYVector();
-  }
+const jsonData = require('./iris.json');
+const IrisData = {
 
-  getXVector() {
-    let xVectors = [], data = this.dataFile;
+  getXVectors: function() {
+    let xVectors = [], data = jsonData;
     for (let i = 0; i < data.length; i++) {
       let keys = Object.keys(data[i]), x = [];
       // We don't want ID, and we don't want the class name
@@ -25,15 +21,16 @@ class DataParser {
     }
     // 150 by 4
     return xVectors;
-  }
+  },
 
-  getYVector() {
-    let yVector = [], data = this.dataFile;
+  getYVectors: function() {
+    let yVector = [], data = jsonData;
     for (let i = 0; i < data.length; i++) {
       yVector.push(speciesMap[data[i].Species]);
     }
     return yVector;
   }
-}
 
-module.exports = DataParser;
+};
+
+module.exports = IrisData;
