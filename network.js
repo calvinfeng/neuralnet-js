@@ -2,6 +2,8 @@
 const IrisData = require('./data-parser.js');
 const Matrix = require('./matrix.js');
 const Vector = require('./vector.js');
+const JSONFile = require('jsonfile');
+
 /*
   We have 3 layers of neural network for simplicity.
   Layer 1 is the input layer: 4 input units + 1 bias unit
@@ -155,9 +157,11 @@ function approxGradient(trainingSetX, trainingSetY, weights, lambda, e) {
 
 function gradientDescent(trainingSetX, trainingSetY) {
   let weights = [Matrix.random(4, 5, 1), Matrix.random(3, 5, 1)];
+  let weightRecord = [];
   let m = trainingSetX.length;
   let lambda = 0.005, alpha = 0.01; //lambda is regularized constant, alpha is learning rate
   let bigDelta, parDerivatives;
+  let iterationCount = 0;
   do {
     bigDelta = deltaMatrices(weights, trainingSetX, trainingSetY);
     parDerivatives = computePartial(weights, bigDelta, m, lambda);
@@ -169,8 +173,22 @@ function gradientDescent(trainingSetX, trainingSetY) {
       }
     }
     console.log(Matrix.norm(parDerivatives[0]) + Matrix.norm(parDerivatives[1]));
+    iterationCount += 1;
+    if (iterationCount%1000 === 0) {
+      weightRecord.push(dupWeight(weights));
+    }
   } while (Matrix.norm(parDerivatives[0]) + Matrix.norm(parDerivatives[1]) > 0.0001);
+  console.log(`Gradient Descent has converged from ${iterationCount}`);
+  writeToFile(weightRecord);
   return weights;
+}
+
+function writeToFile(weights) {
+  let file = './weights.json';
+  let obj = {weights};
+  JSONFile.writeFile(file, obj, function (err) {
+    console.error(err);
+  });
 }
 
 let inputs = IrisData.getInputVectors();
@@ -194,6 +212,18 @@ for (let i = 0; i < yTest.length; i++) {
   console.log(predictions);
   console.log(yTest[i]);
 }
+// https://api.myjson.com/bins/2xh0z
+
+let weights = [
+  [[-0.894, -0.236, -0.947, 1.673, 0.725],
+  [-0.389, 0.298, 0.871, -1.320, -0.574],
+  [4.335, 1.593, 1.662, -2.848, -3.070],
+  [1.017, 0.254, 1.066, -1.937, -0.786]],
+  [[-1.677, -2.871, 1.630, 0.918, 2.844],
+  [-4.085, 1.729, -1.258, 4.815, -3.034],
+  [1.377, 1.129, -0.732, -5.129, -0.692]]
+];
+// console.log(forwardProp([6, 2, 5, 1.5], weights));
 
 /*
   This is gradient checking, to make sure backpropagation is working as intended

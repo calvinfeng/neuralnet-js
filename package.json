@@ -1,0 +1,19 @@
+{
+  "name": "neural-network",
+  "version": "1.0.0",
+  "description": "a non-linear classifier",
+  "main": "network.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/calvinfeng/NeuralNetwork.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/calvinfeng/NeuralNetwork/issues"
+  },
+  "homepage": "https://github.com/calvinfeng/NeuralNetwork#readme"
+}
